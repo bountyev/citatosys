@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Евгений · Копирайтер</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #161616;
+    --bg3: #1f1f1f;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0ede6;
+    --muted: #888;
+    --border: rgba(255,255,255,0.08);
+    --correct: #7fff7f;
+    --wrong: #ff5555;
+    --pending: #555;
+    --font-head: 'Unbounded', sans-serif;
+    --font-body: 'Golos Text', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); overflow-x: hidden; }
+
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  #hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(232,255,71,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: var(--font-head);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  h1 {
+    font-family: var(--font-head);
+    font-size: clamp(2.5rem, 8vw, 6rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+  h1 em { color: var(--accent); font-style: normal; }
+  .hero-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 380px;
+    line-height: 1.6;
+    margin-bottom: 3rem;
+  }
+  .scroll-hint {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    width: fit-content;
+    transition: color 0.2s;
+    text-decoration: none;
+  }
+  .scroll-hint:hover { color: var(--text); }
+  .scroll-arrow {
+    width: 36px; height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
+
+  #trainer {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 2rem;
+    background: var(--bg2);
+    position: relative;
+  }
+  .section-label {
+    font-family: var(--font-head);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .trainer-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  h2 {
+    font-family: var(--font-head);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .stats-row { display: flex; gap: 2rem; }
+  .stat { text-align: right; }
+  .stat-val {
+    font-family: var(--font-head);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; margin-top: 2px; }
+
+  .quote-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .quote-box.promo {
+    border-color: rgba(232,255,71,0.3);
+    background: rgba(232,255,71,0.04);
+  }
+  .quote-source {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .promo-badge {
+    display: none;
+    font-size: 9px;
+    padding: 2px 8px;
+    border: 1px solid rgba(232,255,71,0.5);
+    border-radius: 100px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    font-family: var(--font-head);
+  }
+  .quote-box.promo .promo-badge { display: inline-block; }
+
+  #quote-display {
+    font-family: var(--font-body);
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    line-height: 1.8;
+    letter-spacing: 0.01em;
+  }
+  .char { transition: color 0.05s; }
+  .char.correct { color: var(--correct); }
+  .char.wrong { color: var(--wrong); }
+  .char.pending { color: var(--pending); }
+  .char.cursor {
+    border-bottom: 2px solid var(--accent);
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .input-row { display: flex; gap: 1rem; align-items: stretch; }
+  #type-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+    min-height: 60px;
+  }
+  #type-input:focus { border-color: var(--accent); }
+  #type-input::placeholder { color: var(--pending); }
+  .btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    color: var(--text);
+    font-family: var(--font-head);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #0d0d0d; }
+  .btn.primary:hover { background: #d4eb00; }
+
+  .complete-msg {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(13,13,13,0.92);
+    border-radius: 16px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  .complete-msg.show { display: flex; }
+  .complete-big {
+    font-family: var(--font-head);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--accent);
+  }
+
+  .cat-row { display: flex; gap: 8px; margin-bottom: 2rem; flex-wrap: wrap; }
+  .cat-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cat-btn:hover, .cat-btn.active { border-color: var(--accent); color: var(--accent); }
+
+  .divider { padding: 5rem 2rem 2rem; background: var(--bg); }
+  .divider-line { display: flex; align-items: center; gap: 2rem; }
+  .divider-line::before, .divider-line::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .divider-text {
+    font-family: var(--font-head);
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    color: var(--muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  #portfolio { padding: 2rem 2rem 6rem; background: var(--bg); }
+  .portfolio-intro { margin-bottom: 3rem; }
+  .portfolio-intro h2 { margin-bottom: 0.75rem; }
+  .portfolio-intro p { color: var(--muted); font-size: 1rem; max-width: 500px; line-height: 1.6; }
+
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+  .project-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+    transform-origin: left;
+  }
+  .project-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+  .project-card:hover::before { transform: scaleX(1); }
+  .project-num { font-family: var(--font-head); font-size: 10px; letter-spacing: 0.2em; color: var(--accent); margin-bottom: 1.25rem; }
+  .project-title { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem; line-height: 1.3; }
+  .project-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+  .project-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 11px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 100px; color: var(--muted); letter-spacing: 0.05em; }
+
+  .project-card.featured { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media (max-width: 600px) { .project-card.featured { grid-template-columns: 1fr; } }
+  .project-card.featured::before { background: var(--accent2); }
+  .featured-visual {
+    background: var(--bg3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    font-family: var(--font-head);
+    font-size: 3rem;
+    color: var(--accent);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    overflow: hidden;
+    position: relative;
+  }
+  .featured-visual span { position: relative; z-index: 1; }
+  .featured-visual::after {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(232,255,71,0.1) 0%, transparent 70%);
+    top: -50px; right: -50px;
+  }
+
+  #contact { padding: 4rem 2rem 6rem; background: var(--bg2); text-align: center; }
+  #contact h2 { margin-bottom: 1rem; }
+  #contact p { color: var(--muted); max-width: 400px; margin: 0 auto 2.5rem; line-height: 1.6; }
+  .contact-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+  .progress-bar { height: 2px; background: var(--border); border-radius: 2px; margin-bottom: 2rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.1s; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<section id="hero">
+  <div class="hero-label">Евгений · Копирайтер</div>
+  <h1>Слова,<br>которые<br><em>работают</em></h1>
+  <p class="hero-sub">Рекламные тексты, сценарии, стратегия. И тренажёр слепой печати на цитатах, которые стоит знать.</p>
+  <a class="scroll-hint" href="#trainer">
+    <div class="scroll-arrow">↓</div>
+    <span>Попробуй напечатать</span>
+  </a>
+</section>
+
+<section id="trainer">
+  <div class="section-label">Тренажёр слепой печати</div>
+  <div class="trainer-header">
+    <h2>Печатай.<br>Не смотри<br>на клавиши.</h2>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-val" id="wpm-val">0</div>
+        <div class="stat-label">WPM</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="acc-val">100%</div>
+        <div class="stat-label">Точность</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-row" id="cats">
+    <button class="cat-btn active" data-cat="all">Все</button>
+    <button class="cat-btn" data-cat="cinema">Кино</button>
+    <button class="cat-btn" data-cat="books">Книги</button>
+    <button class="cat-btn" data-cat="music">Музыка</button>
+    <button class="cat-btn" data-cat="ad">Реклама</button>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+
+  <div class="quote-box" id="quote-box">
+    <div class="quote-source">
+      <span id="source-text">— Загружаем цитату</span>
+      <span class="promo-badge">реклама</span>
+    </div>
+    <div id="quote-display"></div>
+    <div class="complete-msg" id="complete-msg">
+      <div class="complete-big" id="complete-wpm">0</div>
+      <div style="font-family:var(--font-head);font-size:0.8rem;letter-spacing:0.2em;color:var(--muted)">WPM · Отлично</div>
+      <button class="btn primary" id="next-quote-complete" style="margin-top:0.5rem">Следующая цитата →</button>
+    </div>
+  </div>
+
+  <div class="input-row">
+    <input type="text" id="type-input" placeholder="Начни печатать здесь…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+    <button class="btn" id="new-quote">Новая</button>
+    <button class="btn" id="reset-btn">Сброс</button>
+  </div>
+</section>
+
+<div class="divider">
+  <div class="divider-line"><span class="divider-text">Портфолио</span></div>
+</div>
+
+<section id="portfolio">
+  <div class="portfolio-intro">
+    <h2>Избранные<br>проекты</h2>
+    <p>Кейсы из рекламы, брендинга и контент-стратегии. Тексты, которые решают задачу.</p>
+  </div>
+
+  <div class="projects-grid">
+    <div class="project-card featured">
+      <div class="featured-visual"><span>30<br>лет</span></div>
+      <div>
+        <div class="project-num">01 · Клиент</div>
+        <div class="project-title">Название кейса — юбилейная кампания бренда</div>
+        <div class="project-desc">Здесь будет описание проекта: задача, решение, результат. Пара строк о том, почему этот кейс показывает твой подход к работе.</div>
+        <div class="project-tags">
+          <span class="tag">Социальные сети</span>
+          <span class="tag">Копирайтинг</span>
+          <span class="tag">Стратегия</span>
+        </div>
+      </div>
+    </div>
+    <div class="project-card">
+      <div class="project-num">02 · Клиент</div>
+      <div class="project-title">Название кейса — OOH-кампания</div>
+      <div class="project-desc">Краткое описание задачи и подхода. Что было интересного в этом проекте.</div>
+      <div class="project-tags"><span class="tag">Наружная реклама</span><span class="tag">Концепция</span></div>
+    </div>
+    <div class="project-card">
+      <div class="project-num">03 · Клиент</div>
+      <div class="project-title">Название кейса — видео-сценарий</div>
+      <div class="project-desc">Краткое описание. Жанр, задача, что получилось.</div>
+      <div class="project-tags"><span class="tag">Сценарий</span><span class="tag">Видео</span></div>
+    </div>
+    <div class="project-card">
+      <div class="project-num">04 · Клиент</div>
+      <div class="project-title">Название кейса — радиореклама</div>
+      <div class="project-desc">Описание проекта. Что за задача, что за решение.</div>
+      <div class="project-tags"><span class="tag">Аудио</span><span class="tag">Радио</span></div>
+    </div>
+    <div class="project-card">
+      <div class="project-num">05 · Клиент</div>
+      <div class="project-title">Название кейса — брендинг</div>
+      <div class="project-desc">Описание проекта. Что за задача, что за решение.</div>
+      <div class="project-tags"><span class="tag">TOV</span><span class="tag">Брендинг</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <p class="section-label" style="text-align:center;margin-bottom:1rem">Контакт</p>
+  <h2>Есть задача?</h2>
+  <p>Обсудим проект, расскажу про подход и покажу релевантные кейсы.</p>
+  <div class="contact-links">
+    <a href="mailto:hello@example.com" class="btn">Email →</a>
+    <a href="https://t.me/username" class="btn">Telegram →</a>
+  </div>
+</section>
+
+<script>
+const REGULAR = [
+  { text: "Жить — значит медленно рождаться.", source: "Антуан де Сент-Экзюпери", cat: "books" },
+  { text: "Страх — это всегда незнание.", source: "Лев Толстой", cat: "books" },
+  { text: "Счастье любит тишину.", source: "Борис Пастернак", cat: "books" },
+  { text: "Ты должен изменить свою жизнь.", source: "Райнер Мария Рильке", cat: "books" },
+  { text: "Делай что должен — и будь что будет.", source: "Лев Толстой", cat: "books" },
+  { text: "Мы все умрём. Это делает нас свободными.", source: "Бойцовский клуб", cat: "cinema" },
+  { text: "Надежда — хорошая штука, а хорошие вещи не умирают.", source: "Побег из Шоушенка", cat: "cinema" },
+  { text: "Жизнь — это коробка шоколадных конфет.", source: "Форрест Гамп", cat: "cinema" },
+  { text: "Иногда я вижу мёртвых людей.", source: "Шестое чувство", cat: "cinema" },
+  { text: "Страх — враг логики.", source: "Фрэнк Синатра", cat: "music" },
+  { text: "Музыка — это ярлыки на флаконах с запахами воспоминаний.", source: "Наум Коржавин", cat: "music" },
+  { text: "Думай иначе.", source: "Apple, 1997", cat: "ad" },
+  { text: "Просто сделай это.", source: "Nike", cat: "ad" },
+  { text: "Не дай себе засохнуть.", source: "Sprite", cat: "ad" },
+  { text: "Иногда лучше молчать и казаться дураком, чем заговорить и развеять сомнения.", source: "Марк Твен", cat: "books" },
+  { text: "Будущее уже здесь — просто распределено неравномерно.", source: "Уильям Гибсон", cat: "books" },
+  { text: "Краткость — сестра таланта.", source: "Антон Чехов", cat: "books" },
+  { text: "Единственный способ делать великую работу — любить то, что делаешь.", source: "Стив Джобс", cat: "ad" },
+  { text: "Тот, кто не рискует, не пьёт шампанского.", source: "Русская пословица", cat: "books" },
+  { text: "Всё пройдёт. И это тоже.", source: "Царь Соломон", cat: "books" },
+];
+
+const PROMO = [
+  { text: "Женя — хороший копирайтер.", source: "Размик Кочарян" },
+  { text: "Заплатите Жене много денег.", source: "Droga5" },
+  { text: "Если ищете копирайтера — вы уже нашли.", source: "Cannes Lions" },
+  { text: "Женя пишет так, что хочется купить.", source: "Клиент, который сначала сомневался" },
+  { text: "Лучший бриф — это Женя без брифа.", source: "Арт-директор, пожелавший остаться анонимным" },
+  { text: "Нанять Женю — лучшее решение квартала.", source: "Совет директоров" },
+];
+
+let quoteCount = 0;
+let promoIndex = 0;
+let currentQuote = null;
+let typedChars = [];
+let startTime = null;
+let timerInterval = null;
+let currentCat = 'all';
+
+function getFiltered() {
+  return currentCat === 'all' ? REGULAR : REGULAR.filter(q => q.cat === currentCat);
+}
+
+function nextQuote() {
+  quoteCount++;
+  if (quoteCount % 4 === 0) {
+    const q = { ...PROMO[promoIndex % PROMO.length], promo: true };
+    promoIndex++;
+    return q;
+  }
+  const pool = getFiltered();
+  let q;
+  do { q = pool[Math.floor(Math.random() * pool.length)]; } while (pool.length > 1 && q === currentQuote);
+  return { ...q, promo: false };
+}
+
+function loadQuote() {
+  currentQuote = nextQuote();
+  typedChars = [];
+  startTime = null;
+  clearInterval(timerInterval);
+  document.getElementById('wpm-val').textContent = '0';
+  document.getElementById('acc-val').textContent = '100%';
+  document.getElementById('progress').style.width = '0%';
+  document.getElementById('complete-msg').classList.remove('show');
+  document.getElementById('source-text').textContent = '— ' + currentQuote.source;
+  document.getElementById('type-input').value = '';
+  document.getElementById('type-input').focus();
+  document.getElementById('quote-box').classList.toggle('promo', !!currentQuote.promo);
+  renderChars();
+}
+
+function renderChars() {
+  const text = currentQuote.text;
+  let html = '';
+  for (let i = 0; i < text.length; i++) {
+    let cls = 'char pending';
+    if (i < typedChars.length) cls = typedChars[i] === text[i] ? 'char correct' : 'char wrong';
+    else if (i === typedChars.length) cls = 'char pending cursor';
+    html += `<span class="${cls}">${text[i] === ' ' ? '&nbsp;' : text[i]}</span>`;
+  }
+  document.getElementById('quote-display').innerHTML = html;
+  document.getElementById('progress').style.width = Math.min(100, (typedChars.length / text.length) * 100) + '%';
+}
+
+function calcWPM() {
+  if (!startTime) return 0;
+  return Math.round((typedChars.length / 5) / ((Date.now() - startTime) / 60000)) || 0;
+}
+function calcAcc() {
+  if (!typedChars.length) return 100;
+  const wrong = typedChars.filter((c, i) => c !== currentQuote.text[i]).length;
+  return Math.round(((typedChars.length - wrong) / typedChars.length) * 100);
+}
+
+document.getElementById('type-input').addEventListener('input', function() {
+  if (!startTime && this.value.length > 0) {
+    startTime = Date.now();
+    timerInterval = setInterval(() => {
+      document.getElementById('wpm-val').textContent = calcWPM();
+      document.getElementById('acc-val').textContent = calcAcc() + '%';
+    }, 300);
+  }
+  typedChars = this.value.split('');
+  renderChars();
+  if (typedChars.length >= currentQuote.text.length) {
+    clearInterval(timerInterval);
+    const wpm = calcWPM();
+    document.getElementById('wpm-val').textContent = wpm;
+    document.getElementById('acc-val').textContent = calcAcc() + '%';
+    document.getElementById('complete-wpm').textContent = wpm;
+    document.getElementById('complete-msg').classList.add('show');
+  }
+});
+
+document.getElementById('type-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Backspace') { typedChars = typedChars.slice(0, -1); renderChars(); }
+});
+
+document.getElementById('new-quote').addEventListener('click', loadQuote);
+document.getElementById('reset-btn').addEventListener('click', loadQuote);
+document.getElementById('next-quote-complete').addEventListener('click', loadQuote);
+
+document.getElementById('cats').addEventListener('click', function(e) {
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = btn.dataset.cat;
+  loadQuote();
+});
+
+loadQuote();
+</script>
+</body>
+</html>
